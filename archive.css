@@ -1,0 +1,26 @@
+/* Hide archive.ph / archive.is / archive.today chrome — show article full-screen */
+
+/* Top toolbar bar with archive date, URL, share icons */
+#HEADER,
+#TBAR,
+#TOOLBOX,
+#ABBLOCK,
+#TOPBAR,
+div[id="HEADER"],
+.HEADER {
+  display: none !important;
+}
+
+/* Remove the top margin/padding that compensates for the hidden bar */
+body {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* The archived page is inside a wrapper — let it fill the viewport */
+#CONTENT,
+#snap_div,
+.CONTENT {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}

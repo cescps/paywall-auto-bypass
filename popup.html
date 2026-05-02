@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Paywall Bypass</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0f0f13;
+      color: #e8e8f0;
+      width: 300px;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid #2a2a3e;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .header-icon { font-size: 20px; }
+    .header-title { font-size: 14px; font-weight: 600; color: #c8b8ff; }
+    .header-sub { font-size: 10px; color: #5a5a7a; margin-top: 1px; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid #1a1a2a;
+      background: #0d0d11;
+    }
+    .tab {
+      flex: 1; padding: 9px 0;
+      font-size: 11px; font-weight: 500;
+      color: #5a5a7a; cursor: pointer;
+      text-align: center; border: none;
+      background: none; transition: color .15s;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .tab.active { color: #c8b8ff; border-bottom-color: #6b4fbb; }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Status */
+    .status-bar {
+      padding: 9px 16px;
+      font-size: 11px;
+      display: flex; align-items: center; gap: 8px;
+      border-bottom: 1px solid #1a1a2a;
+      background: #0d0d11;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .dot.clear   { background: #48bb78; }
+    .dot.paywall { background: #e53e3e; }
+    .dot.unknown { background: #4a4a6a; }
+    .status-text { color: #8888aa; }
+
+    .section { padding: 12px 16px; border-bottom: 1px solid #1a1a2a; }
+
+    .btn {
+      width: 100%; padding: 9px 12px;
+      border-radius: 7px; border: none; cursor: pointer;
+      font-size: 13px; font-weight: 500;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn:active { transform: scale(.98); }
+    .btn-primary { background: linear-gradient(135deg,#6b4fbb,#9b59b6); color:#fff; }
+
+    .row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 0;
+    }
+    .row + .row { border-top: 1px solid #161622; }
+    .row-label { font-size: 12px; color: #a0a0c0; }
+    .row-sub { font-size: 10px; color: #4a4a6a; margin-top: 2px; }
+
+    .toggle { position: relative; width: 36px; height: 19px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer;
+      top:0; left:0; right:0; bottom:0;
+      background: #2a2a3e; border-radius: 19px; transition: .2s;
+    }
+    .slider:before {
+      position: absolute; content: '';
+      height: 13px; width: 13px; left: 3px; bottom: 3px;
+      background: #5a5a7a; border-radius: 50%; transition: .2s;
+    }
+    input:checked + .slider { background: #6b4fbb; }
+    input:checked + .slider:before { transform: translateX(17px); background: #fff; }
+
+    /* Sites panel */
+    .sites-list { max-height: 280px; overflow-y: auto; }
+    .sites-list::-webkit-scrollbar { width: 4px; }
+    .sites-list::-webkit-scrollbar-thumb { background: #2a2a3e; border-radius: 2px; }
+
+    .site-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 16px;
+      border-bottom: 1px solid #141420;
+    }
+    .site-row:last-child { border-bottom: none; }
+    .site-name { font-size: 12px; color: #c0c0d8; font-family: monospace; }
+    .site-group { font-size: 10px; color: #3a3a5a; margin-top: 1px; }
+
+    .service-label { font-size: 10px; color: #5a5a7a; text-transform: uppercase; letter-spacing:.06em; margin-bottom: 7px; }
+    .service-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+    .svc {
+      padding: 6px 8px; background: #1a1a2a;
+      border: 1px solid #2a2a3e; border-radius: 6px;
+      color: #8888aa; font-size: 11px; cursor: pointer; text-align: center;
+      transition: all .15s;
+    }
+    .svc:hover { background: #252538; color: #e0d0ff; border-color: #6b4fbb; }
+    .svc.active { background: #2d1f4e; color: #c8b8ff; border-color: #6b4fbb; }
+
+    .footer { padding: 7px 16px; font-size: 10px; color: #2a2a44; text-align: center; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-icon">🔓</span>
+  <div>
+    <div class="header-title">Paywall Bypass</div>
+    <div class="header-sub">archive.ph · archive.is · 12ft.io</div>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="main">Current page</button>
+  <button class="tab" data-tab="sites">Sites</button>
+  <button class="tab" data-tab="settings">Settings</button>
+</div>
+
+<!-- MAIN TAB -->
+<div class="panel active" id="panel-main">
+  <div class="status-bar">
+    <div class="dot unknown" id="statusDot"></div>
+    <span class="status-text" id="statusText">Checking…</span>
+  </div>
+  <div class="section">
+    <button class="btn btn-primary" id="bypassNow">🔓 Bypass this page</button>
+  </div>
+  <div class="section">
+    <div class="row">
+      <div>
+        <div class="row-label">Auto-bypass on <span id="currentHost" style="color:#9b7fee;font-family:monospace">this site</span></div>
+        <div class="row-sub">Override for current domain</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="siteToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- SITES TAB -->
+<div class="panel" id="panel-sites">
+  <div class="sites-list" id="sitesList"></div>
+</div>
+
+<!-- SETTINGS TAB -->
+<div class="panel" id="panel-settings">
+  <div class="section">
+    <div class="row">
+      <div>
+        <div class="row-label">Auto-bypass (global default)</div>
+        <div class="row-sub">Applied to all news sites without override</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="autoToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+  <div class="section">
+    <div class="service-label">Archive service</div>
+    <div class="service-grid" id="serviceGrid"></div>
+  </div>
+  <div class="footer">Right-click any page → Bypass Paywall</div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
